@@ -335,131 +335,355 @@
   .game-panel { display: none; }
   .game-panel.active { display: block; }
 
-  /* GAME 1 – DRAG & DROP NEPHRON */
-  .drag-area {
-    display: flex; flex-direction: column; gap: 1rem;
+  /* ===== UNIVERSAL DRAG GHOST ===== */
+  #dragGhost {
+    position: fixed; pointer-events: none; z-index: 9999;
+    padding: 10px 18px; border-radius: 100px;
+    font-size: 0.9rem; font-weight: 700; color: #fff;
+    background: var(--primary-dark);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    transform: translate(-50%,-50%) rotate(-4deg) scale(1.12);
+    display: none; white-space: nowrap;
   }
-
-  .drag-parts-pool {
-    display: flex; flex-wrap: wrap; gap: 10px; padding: 1rem;
-    background: var(--bg); border-radius: var(--radius); border: 2px dashed var(--border);
-    min-height: 80px;
-  }
-
-  .drag-part {
-    padding: 8px 16px; background: var(--primary-light); color: #fff;
-    border-radius: 100px; font-size: 0.88rem; font-weight: 600;
-    cursor: grab; user-select: none;
-    transition: transform 0.15s, box-shadow 0.15s;
-    touch-action: none;
-  }
-
-  .drag-part:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(21,101,192,0.3); }
-  .drag-part.dragging { opacity: 0.5; cursor: grabbing; }
-
-  .drop-slots {
-    display: flex; flex-direction: column; gap: 8px;
-  }
-
-  .drop-slot {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 16px; border-radius: 10px;
-    border: 2px dashed #ccc; background: #fafafa;
-    min-height: 48px; transition: all 0.2s;
-    font-size: 0.9rem; color: var(--text-muted);
-  }
-
-  .drop-slot.over { border-color: var(--primary); background: var(--accent-light); }
-  .drop-slot.correct { border-color: var(--success); background: var(--success-bg); color: var(--success); font-weight: 600; }
-  .drop-slot.wrong { border-color: var(--error); background: var(--error-bg); animation: shake 0.3s; }
-
-  .slot-number {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--border); display: flex; align-items: center; justify-content: center;
-    font-size: 0.85rem; font-weight: 700; color: var(--text-muted); flex-shrink: 0;
-  }
-
-  .correct .slot-number { background: var(--success); color: #fff; }
 
   @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    25% { transform: translateX(-6px); }
-    75% { transform: translateX(6px); }
+    0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}
+  }
+  @keyframes popIn {
+    0%{transform:scale(0.5);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}
+  }
+  @keyframes correctPulse {
+    0%{box-shadow:0 0 0 0 rgba(46,125,50,0.5)}70%{box-shadow:0 0 0 10px rgba(46,125,50,0)}100%{box-shadow:none}
+  }
+  @keyframes floatUp {
+    0%{transform:translateY(0);opacity:1}100%{transform:translateY(-30px);opacity:0}
   }
 
-  /* GAME 2 – REABSORPTION HUNT */
-  .game2-layout {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+  /* ===== GAME CARD HEADER ===== */
+  .game-header {
+    display: flex; align-items: flex-start; gap: 14px; margin-bottom: 1.4rem;
+    padding-bottom: 1.2rem; border-bottom: 1px solid var(--border);
+  }
+  .game-header-icon {
+    width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1.6rem;
+  }
+  .game-header h3 { color: var(--primary-dark); font-size: 1.15rem; margin-bottom: 3px; }
+  .game-header p  { color: var(--text-muted); font-size: 0.87rem; line-height: 1.5; }
+  .game-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--primary-dark); color: #fff;
+    border-radius: 100px; padding: 3px 10px; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.4px; margin-top: 5px;
   }
 
-  .nephron-regions {
+  /* ===== GAME 1 – NEPHRON PIPELINE ===== */
+  .g1-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  @media(max-width:640px){ .g1-layout { grid-template-columns: 1fr; } }
+
+  .g1-pipeline {
+    background: linear-gradient(180deg,#E8F4FD 0%,#F0F7FF 100%);
+    border-radius: var(--radius-lg); padding: 1.2rem;
+    border: 1px solid rgba(21,101,192,0.15); position: relative;
+  }
+
+  .g1-pipeline-title {
+    font-size: 0.7rem; font-weight: 800; color: var(--primary);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .g1-pipeline-title::after {
+    content: ''; flex: 1; height: 1px; background: rgba(21,101,192,0.2);
+  }
+
+  .g1-slot-row {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 5px;
+  }
+
+  .g1-step-num {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+    background: var(--primary-dark); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 800;
+  }
+
+  .g1-connector {
+    width: 3px; height: 12px; background: rgba(21,101,192,0.25);
+    margin-left: 9px; border-radius: 2px;
+  }
+
+  .g1-part-slot {
+    flex: 1; height: 46px; border-radius: 10px;
+    display: flex; align-items: center; padding: 0 14px;
+    font-size: 0.85rem; font-weight: 700; color: #fff;
+    transition: all 0.25s; cursor: pointer;
+    position: relative; overflow: hidden;
+  }
+
+  .g1-part-slot.empty {
+    border: 2px dashed #C5D8F5; background: #F5F9FF !important;
+    color: #90AAC8; font-weight: 500; font-size: 0.8rem; cursor: default;
+  }
+  .g1-part-slot.filled { box-shadow: 0 3px 10px rgba(0,0,0,0.18); }
+  .g1-part-slot.filled::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(135deg,rgba(255,255,255,0.18) 0%,transparent 60%);
+  }
+  .g1-part-slot.drop-target-active {
+    border: 2px dashed rgba(255,255,255,0.6) !important;
+    background: #A5C8F0 !important; color: #fff;
+    animation: pulseSlot 0.8s ease infinite;
+  }
+  @keyframes pulseSlot {
+    0%,100%{opacity:1}50%{opacity:0.7}
+  }
+  .g1-part-slot.correct-anim { animation: correctPulse 0.6s ease; }
+  .g1-part-slot.wrong-anim  { animation: shake 0.35s; box-shadow: 0 0 0 3px rgba(198,40,40,0.4); }
+
+  .g1-pool-wrap {
+    background: #F8FBFF; border-radius: var(--radius-lg); padding: 1rem;
+    border: 1px solid rgba(21,101,192,0.12);
+  }
+  .g1-pool-title {
+    font-size: 0.7rem; font-weight: 800; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .g1-pool-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .g1-pool { display: flex; flex-wrap: wrap; gap: 8px; min-height: 60px; }
+
+  .drag-chip {
+    padding: 9px 15px; border-radius: 10px;
+    font-size: 0.85rem; font-weight: 700; color: #fff;
+    cursor: grab; user-select: none; touch-action: none;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    position: relative; display: flex; align-items: center; gap: 7px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+  .drag-chip::after {
+    content:''; position:absolute; inset:0; border-radius:10px;
+    background:linear-gradient(135deg,rgba(255,255,255,0.2) 0%,transparent 60%);
+    pointer-events:none;
+  }
+  .drag-chip:active { cursor:grabbing; transform:scale(1.07) rotate(-1deg); box-shadow:0 8px 20px rgba(0,0,0,0.28); }
+  .drag-chip.is-dragging { opacity:0.25; transform:scale(0.95); }
+  .drag-chip .chip-dot {
+    width:8px; height:8px; border-radius:50%;
+    background:rgba(255,255,255,0.5); flex-shrink:0;
+  }
+
+  /* ===== GAME 2 – NEPHRON DIAGRAM ===== */
+  .g2-wrap { display: grid; grid-template-columns: 200px 1fr; gap: 1.5rem; align-items: start; }
+  @media(max-width:680px){ .g2-wrap { grid-template-columns: 1fr; } }
+
+  .g2-palette { display: flex; flex-direction: column; gap: 7px; }
+  .g2-palette-title {
+    font-size: 0.7rem; font-weight: 800; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
+  }
+
+  .mol-chip {
+    padding: 9px 13px; border-radius: 10px;
+    font-size: 0.85rem; font-weight: 700; color: #fff;
+    cursor: grab; user-select: none; touch-action: none;
+    display: flex; align-items: center; gap: 9px;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18); position: relative; overflow: hidden;
+  }
+  .mol-chip::after {
+    content:''; position:absolute; inset:0; border-radius:10px;
+    background:linear-gradient(135deg,rgba(255,255,255,0.15) 0%,transparent 60%);
+    pointer-events:none;
+  }
+  .mol-chip:active { cursor:grabbing; transform:scale(1.05); }
+  .mol-chip.is-dragging { opacity:0.25; }
+  .mol-chip.placed { opacity:0.32; cursor:default; pointer-events:none; }
+
+  .mol-chip .mol-icon {
+    width: 26px; height: 26px; border-radius: 8px;
+    background: rgba(255,255,255,0.22);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; flex-shrink: 0;
+  }
+
+  /* Nephron tube visual */
+  .g2-nephron-diagram {
+    background: linear-gradient(180deg, #E3F2FD 0%, #F8FBFF 100%);
+    border-radius: var(--radius-lg); padding: 1rem;
+    border: 1px solid rgba(21,101,192,0.15);
     display: flex; flex-direction: column; gap: 8px;
   }
+  .g2-region {
+    border-radius: 12px; padding: 12px 14px;
+    border: 2px dashed #C5D8F5; background: rgba(255,255,255,0.7);
+    min-height: 70px; transition: all 0.22s; position: relative;
+  }
+  .g2-region-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  }
+  .g2-region-badge {
+    padding: 3px 10px; border-radius: 100px;
+    font-size: 0.7rem; font-weight: 800; letter-spacing: 0.4px; color: #fff;
+  }
+  .g2-region h4 {
+    font-size: 0.83rem; font-weight: 700; color: var(--text);
+  }
+  .g2-region-desc {
+    font-size: 0.73rem; color: var(--text-muted); margin-bottom: 6px; line-height: 1.5;
+  }
+  .g2-region.drop-over {
+    border-color: var(--primary); background: #D4E9FF;
+    transform: scale(1.015); box-shadow: 0 4px 14px rgba(21,101,192,0.2);
+  }
+  .g2-region.has-items { border-style: solid; border-color: rgba(21,101,192,0.3); }
+  .g2-dropped-items { display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; }
 
-  .nephron-region {
-    padding: 14px; border-radius: 10px;
-    border: 2px dashed #ccc; background: #fafafa;
-    min-height: 64px; transition: all 0.2s;
+  .placed-chip {
+    padding: 4px 11px; border-radius: 100px;
+    font-size: 0.78rem; font-weight: 700; color: #fff;
+    animation: popIn 0.25s ease; display: flex; align-items: center; gap: 5px;
   }
 
-  .nephron-region h4 {
-    font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.5px;
+  .g2-connector { height: 10px; display: flex; justify-content: center; }
+  .g2-connector::before { content:'↓'; color:rgba(21,101,192,0.35); font-size:0.9rem; }
+
+  /* ===== GAME 3 – CLASSIFY ===== */
+  .g3-pool-label {
+    font-size: 0.7rem; font-weight: 800; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .g3-pool-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .g3-pool {
+    display: flex; flex-wrap: wrap; gap: 9px; padding: 1rem;
+    background: #F5F9FF; border-radius: var(--radius-lg);
+    border: 2px dashed rgba(21,101,192,0.2); min-height: 80px;
   }
 
-  .nephron-region.over { border-color: var(--primary); background: #E3F2FD; }
-  .nephron-region.has-correct { border-color: var(--success); background: var(--success-bg); }
+  .g3-bins { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.2rem; }
+  @media(max-width:500px){ .g3-bins { grid-template-columns: 1fr; } }
 
-  .molecules-palette {
-    display: flex; flex-direction: column; gap: 8px;
+  .g3-bin {
+    border-radius: var(--radius-lg); padding: 1.1rem;
+    min-height: 140px; transition: all 0.22s; border: 2px dashed;
+    position: relative; overflow: hidden;
   }
-
-  .mol-item {
-    padding: 10px 16px; border-radius: 8px;
-    background: var(--primary); color: #fff;
-    font-size: 0.88rem; font-weight: 600;
-    cursor: grab; user-select: none;
-    transition: all 0.15s;
+  .g3-bin::before {
+    content:''; position:absolute; inset:0; opacity:0.06; pointer-events:none;
+    background-size: 24px 24px;
   }
-
-  .mol-item:hover { background: var(--primary-dark); }
-  .mol-item.placed { opacity: 0.4; cursor: default; }
-
-  /* GAME 3 – CLASSIFY MOLECULES */
-  .classify-game {
-    display: grid; grid-template-columns: 1fr; gap: 1.5rem;
+  .g3-bin.bin-yes {
+    border-color: #FFA000;
+    background: linear-gradient(145deg,#FFF8E1 0%,#FFFBF0 100%);
   }
-
-  .classify-molecules {
-    display: flex; flex-wrap: wrap; gap: 10px; padding: 1rem;
-    background: var(--bg); border-radius: var(--radius); border: 2px dashed var(--border);
-    min-height: 80px;
+  .g3-bin.bin-yes::before {
+    background-image: radial-gradient(circle, #FFA000 1px, transparent 1px);
   }
-
-  .classify-bins {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  .g3-bin.bin-no {
+    border-color: #1976D2;
+    background: linear-gradient(145deg,#E3F2FD 0%,#EEF6FF 100%);
   }
-
-  .classify-bin {
-    border-radius: var(--radius); padding: 1rem;
-    border: 2px dashed #ccc; min-height: 100px;
-    transition: all 0.2s;
+  .g3-bin.bin-no::before {
+    background-image: radial-gradient(circle, #1976D2 1px, transparent 1px);
   }
+  .g3-bin.drop-over { transform: scale(1.03); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+  .g3-bin.drop-over.bin-yes { border-color: #FF6F00; background: #FFF3E0; }
+  .g3-bin.drop-over.bin-no  { border-color: #0D47A1; background: #DCEEFB; }
 
-  .classify-bin.urine-yes { border-color: #FFA000; background: #FFF8E1; }
-  .classify-bin.urine-no { border-color: #1976D2; background: #E3F2FD; }
-  .classify-bin.over { transform: scale(1.02); }
-
-  .classify-bin h4 {
-    font-size: 0.88rem; font-weight: 700; margin-bottom: 8px;
+  .g3-bin-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px; position: relative;
   }
+  .g3-bin-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+  }
+  .bin-yes .g3-bin-icon { background: rgba(255,160,0,0.15); }
+  .bin-no  .g3-bin-icon { background: rgba(25,118,210,0.12); }
 
-  .urine-yes h4 { color: #E65100; }
-  .urine-no h4 { color: #0D47A1; }
+  .g3-bin-title { font-size: 0.88rem; font-weight: 800; line-height: 1.2; }
+  .bin-yes .g3-bin-title { color: #E65100; }
+  .bin-no  .g3-bin-title { color: #0D47A1; }
+  .g3-bin-sub { font-size: 0.73rem; color: var(--text-muted); line-height: 1.4; margin-top: 2px; }
 
-  .classify-bin .mol-item { background: #888; }
-  .urine-yes .mol-item { background: #FF8F00; }
-  .urine-no .mol-item { background: #1565C0; }
+  .g3-count-badge {
+    position: absolute; top: 0; right: 0;
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 800; color: #fff;
+    transition: all 0.3s;
+  }
+  .bin-yes .g3-count-badge { background: #FFA000; }
+  .bin-no  .g3-count-badge { background: #1976D2; }
+
+  .g3-dropped { display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; }
+  .classify-chip {
+    padding: 5px 12px; border-radius: 100px;
+    font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 5px;
+    animation: popIn 0.25s ease;
+  }
+  .bin-yes .classify-chip { background: #FF8F00; color: #fff; }
+  .bin-no  .classify-chip { background: #1565C0; color: #fff; }
+
+  /* ===== GAME 4 VISUAL ===== */
+  .g4-header-bar {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 1.5rem;
+    background: linear-gradient(135deg,#0D47A1,#1565C0);
+    border-radius: var(--radius-lg); padding: 1rem 1.3rem;
+  }
+  .g4-kidney-anim { width: 56px; flex-shrink: 0; }
+  .g4-health-info { flex: 1; }
+  .g4-health-label { font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 5px; }
+  .g4-health-bar-wrap {
+    height: 16px; border-radius: 100px;
+    background: rgba(0,0,0,0.25); overflow: hidden; position: relative;
+  }
+  .g4-health-fill {
+    height: 100%; border-radius: 100px;
+    transition: width 0.7s cubic-bezier(.25,.8,.25,1);
+  }
+  .g4-health-pct {
+    font-size: 1.4rem; font-weight: 800; color: #fff; min-width: 54px; text-align: right;
+  }
+  .g4-progress-dots {
+    display: flex; gap: 6px; margin-top: 8px;
+  }
+  .g4-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: rgba(255,255,255,0.25); transition: all 0.3s;
+  }
+  .g4-dot.done-correct { background: #69F0AE; }
+  .g4-dot.done-wrong   { background: #FF5252; }
+  .g4-dot.current      { background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,0.3); }
+
+  .g4-scenario-card {
+    border-radius: var(--radius-lg); padding: 1.3rem;
+    border-left: 5px solid var(--primary); background: #F0F7FF;
+    margin-bottom: 1.2rem; display: flex; gap: 12px;
+  }
+  .g4-scenario-icon { font-size: 2rem; flex-shrink: 0; line-height: 1.2; }
+  .g4-scenario-text { font-size: 1rem; font-weight: 600; color: var(--primary-dark); line-height: 1.5; }
+
+  .g4-options { display: flex; flex-direction: column; gap: 9px; }
+  .g4-opt {
+    padding: 13px 18px; border-radius: 12px;
+    border: 2px solid rgba(21,101,192,0.15); background: #fff;
+    color: var(--text); font-size: 0.9rem; font-weight: 500;
+    cursor: pointer; text-align: left; transition: all 0.2s;
+    display: flex; align-items: flex-start; gap: 10px; line-height: 1.45;
+  }
+  .g4-opt-letter {
+    width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+    background: #EEF4FB; color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 800;
+  }
+  .g4-opt:hover:not(:disabled) { border-color: var(--primary); background: #EEF4FB; transform: translateX(3px); }
+  .g4-opt.correct { border-color: var(--success); background: var(--success-bg); color: var(--success); }
+  .g4-opt.correct .g4-opt-letter { background: var(--success); color: #fff; }
+  .g4-opt.wrong   { border-color: var(--error);   background: var(--error-bg);   color: var(--error); }
+  .g4-opt.wrong .g4-opt-letter   { background: var(--error); color: #fff; }
 
   /* GAME 4 – SAVE THE KIDNEY */
   .game4-scenario {
@@ -663,7 +887,7 @@
     .anatomy-grid { grid-template-columns: 1fr; }
     .stage-layout { grid-template-columns: 1fr; }
     .game2-layout { grid-template-columns: 1fr; }
-    .classify-bins { grid-template-columns: 1fr; }
+    .g3-bins { grid-template-columns: 1fr; }
 
     .section-title { font-size: 1.5rem; }
   }
@@ -1113,24 +1337,32 @@
       <!-- GAME 1 -->
       <div class="game-panel active" id="game1-panel">
         <div class="card">
-          <h3 style="margin-bottom:0.5rem;color:var(--primary-dark);">Nefronu Oluştur</h3>
-          <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1.5rem;">Aşağıdaki nefron parçalarını doğru sıraya sürükle-bırak ile yerleştir.</p>
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:1rem;">
+            <div style="width:44px;height:44px;border-radius:12px;background:#E3F2FD;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">🔬</div>
+            <div>
+              <h3 style="color:var(--primary-dark);margin-bottom:2px;">Nefronu Oluştur</h3>
+              <p style="color:var(--text-muted);font-size:0.88rem;">Nefron parçalarını soldan sağa doğru sıraya yerleştir. Sürükle-bırak veya parçaya dokun, sonra oku tıkla.</p>
+            </div>
+          </div>
 
-          <div class="drag-area">
-            <div class="drag-parts-pool" id="partsPool">
+          <!-- Visual nephron slots + chip pool -->
+          <div class="g1-layout">
+            <!-- Nephron diagram side -->
+            <div id="g1NephronVisual" class="g1-nephron-visual">
               <!-- Filled by JS -->
             </div>
 
-            <div class="drop-slots" id="dropSlots">
-              <!-- Filled by JS -->
+            <!-- Pool side -->
+            <div>
+              <p class="g1-nephron-label" style="margin-bottom:8px;">Karışık parçalar:</p>
+              <div class="g1-pool" id="g1Pool"></div>
             </div>
           </div>
 
           <div style="margin-top:1rem;display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="btn-primary" style="padding:10px 20px;font-size:0.88rem;" onclick="checkGame1()">Kontrol Et</button>
-            <button onclick="resetGame1()" style="padding:10px 20px;border-radius:100px;border:2px solid var(--primary);background:transparent;color:var(--primary);font-weight:700;font-size:0.88rem;cursor:pointer;">Sıfırla</button>
+            <button class="btn-primary" style="padding:10px 22px;font-size:0.88rem;" onclick="checkGame1()">✓ Kontrol Et</button>
+            <button onclick="resetGame1()" style="padding:10px 22px;border-radius:100px;border:2px solid var(--primary);background:transparent;color:var(--primary);font-weight:700;font-size:0.88rem;cursor:pointer;">↺ Sıfırla</button>
           </div>
-
           <div id="game1Feedback" class="feedback-box"></div>
         </div>
       </div>
@@ -1138,33 +1370,50 @@
       <!-- GAME 2 -->
       <div class="game-panel" id="game2-panel">
         <div class="card">
-          <h3 style="margin-bottom:0.5rem;color:var(--primary-dark);">Geri Emilim Avı</h3>
-          <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1.5rem;">Sağdaki maddeleri geri emildikleri nefron bölgelerine sürükle.</p>
-
-          <div class="game2-layout">
-            <div class="nephron-regions" id="nephronRegions">
-              <div class="nephron-region" id="region-proximal" ondragover="allowDrop(event)" ondrop="dropMol(event,'proximal')">
-                <h4>Proksimal Tüp</h4>
-                <div class="region-items"></div>
-              </div>
-              <div class="nephron-region" id="region-henle" ondragover="allowDrop(event)" ondrop="dropMol(event,'henle')">
-                <h4>Henle Kulpu</h4>
-                <div class="region-items"></div>
-              </div>
-              <div class="nephron-region" id="region-distal" ondragover="allowDrop(event)" ondrop="dropMol(event,'distal')">
-                <h4>Distal Tüp / Toplayıcı Kanal</h4>
-                <div class="region-items"></div>
-              </div>
-            </div>
-
-            <div class="molecules-palette" id="molPalette">
-              <!-- Filled by JS -->
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:1.2rem;">
+            <div style="width:44px;height:44px;border-radius:12px;background:#E8F5E9;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">🎯</div>
+            <div>
+              <h3 style="color:var(--primary-dark);margin-bottom:2px;">Geri Emilim Avı</h3>
+              <p style="color:var(--text-muted);font-size:0.88rem;">Sol paneldeki maddeleri geri emildikleri nefron bölgesine sürükle veya tıklayarak yerleştir.</p>
             </div>
           </div>
 
-          <div style="margin-top:1rem;display:flex;gap:10px;">
-            <button class="btn-primary" style="padding:10px 20px;font-size:0.88rem;" onclick="checkGame2()">Kontrol Et</button>
-            <button onclick="resetGame2()" style="padding:10px 20px;border-radius:100px;border:2px solid var(--primary);background:transparent;color:var(--primary);font-weight:700;font-size:0.88rem;cursor:pointer;">Sıfırla</button>
+          <div class="g2-layout">
+            <!-- Molecule palette -->
+            <div>
+              <p class="g1-nephron-label" style="margin-bottom:8px;">Maddeler:</p>
+              <div class="g2-palette" id="g2Palette"></div>
+            </div>
+
+            <!-- Nephron regions -->
+            <div class="g2-regions">
+              <div class="g2-region" id="g2r-proximal" data-region="proximal">
+                <div class="g2-region-header">
+                  <div class="g2-region-dot" style="background:#1565C0;"></div>
+                  <h4>Proksimal Tüp</h4>
+                </div>
+                <div class="g2-dropped-items" id="g2drop-proximal"></div>
+              </div>
+              <div class="g2-region" id="g2r-henle" data-region="henle">
+                <div class="g2-region-header">
+                  <div class="g2-region-dot" style="background:#0288D1;"></div>
+                  <h4>Henle Kulpu</h4>
+                </div>
+                <div class="g2-dropped-items" id="g2drop-henle"></div>
+              </div>
+              <div class="g2-region" id="g2r-distal" data-region="distal">
+                <div class="g2-region-header">
+                  <div class="g2-region-dot" style="background:#00838F;"></div>
+                  <h4>Distal Tüp / Toplayıcı Kanal</h4>
+                </div>
+                <div class="g2-dropped-items" id="g2drop-distal"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:1rem;display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn-primary" style="padding:10px 22px;font-size:0.88rem;" onclick="checkGame2()">✓ Kontrol Et</button>
+            <button onclick="resetGame2()" style="padding:10px 22px;border-radius:100px;border:2px solid var(--primary);background:transparent;color:var(--primary);font-weight:700;font-size:0.88rem;cursor:pointer;">↺ Sıfırla</button>
           </div>
           <div id="game2Feedback" class="feedback-box"></div>
         </div>
@@ -1173,28 +1422,42 @@
       <!-- GAME 3 -->
       <div class="game-panel" id="game3-panel">
         <div class="card">
-          <h3 style="margin-bottom:0.5rem;color:var(--primary-dark);">İdrar Sınıflandırma</h3>
-          <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1.5rem;">Maddeleri doğru kutuya sürükle: İdrarda bulunur mu, bulunmaz mı?</p>
-
-          <div class="classify-game">
-            <div class="classify-molecules" id="classifyPool">
-              <!-- Filled by JS -->
-            </div>
-            <div class="classify-bins">
-              <div class="classify-bin urine-yes" id="bin-yes" ondragover="allowDrop(event)" ondrop="dropClassify(event,'yes')">
-                <h4>🟡 İdrarda BULUNUR</h4>
-                <div id="bin-yes-items"></div>
-              </div>
-              <div class="classify-bin urine-no" id="bin-no" ondragover="allowDrop(event)" ondrop="dropClassify(event,'no')">
-                <h4>🔵 İdrarda BULUNMAZ</h4>
-                <div id="bin-no-items"></div>
-              </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:1.2rem;">
+            <div style="width:44px;height:44px;border-radius:12px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">🧪</div>
+            <div>
+              <h3 style="color:var(--primary-dark);margin-bottom:2px;">İdrar Sınıflandırma</h3>
+              <p style="color:var(--text-muted);font-size:0.88rem;">Her molekülü doğru kutuya sürükle: İdrarda bulunur mu, bulunmaz mı?</p>
             </div>
           </div>
 
-          <div style="margin-top:1rem;display:flex;gap:10px;">
-            <button class="btn-primary" style="padding:10px 20px;font-size:0.88rem;" onclick="checkGame3()">Kontrol Et</button>
-            <button onclick="resetGame3()" style="padding:10px 20px;border-radius:100px;border:2px solid var(--primary);background:transparent;color:var(--primary);font-weight:700;font-size:0.88rem;cursor:pointer;">Sıfırla</button>
+          <div class="g3-pool" id="g3Pool"></div>
+
+          <div class="g3-bins" style="margin-top:1rem;">
+            <div class="g3-bin bin-yes" id="g3bin-yes">
+              <div class="g3-bin-header">
+                <div class="g3-bin-icon">🟡</div>
+                <div>
+                  <h4>İdrarda BULUNUR</h4>
+                  <div class="g3-bin-subtitle">Geri emilmez veya filtrata geçer</div>
+                </div>
+              </div>
+              <div class="g3-dropped" id="g3drop-yes"></div>
+            </div>
+            <div class="g3-bin bin-no" id="g3bin-no">
+              <div class="g3-bin-header">
+                <div class="g3-bin-icon">🔵</div>
+                <div>
+                  <h4>İdrarda BULUNMAZ</h4>
+                  <div class="g3-bin-subtitle">Geri emilir veya filtraya geçemez</div>
+                </div>
+              </div>
+              <div class="g3-dropped" id="g3drop-no"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:1rem;display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn-primary" style="padding:10px 22px;font-size:0.88rem;" onclick="checkGame3()">✓ Kontrol Et</button>
+            <button onclick="resetGame3()" style="padding:10px 22px;border-radius:100px;border:2px solid var(--primary);background:transparent;color:var(--primary);font-weight:700;font-size:0.88rem;cursor:pointer;">↺ Sıfırla</button>
           </div>
           <div id="game3Feedback" class="feedback-box"></div>
         </div>
@@ -1304,6 +1567,9 @@
   <p><strong>Üriner Sistem – 11. Sınıf Biyoloji İnteraktif Eğitim Sitesi</strong></p>
   <p>MEB Müfredatına uygun hazırlanmıştır · Tüm içerikler eğitim amaçlıdır</p>
 </footer>
+
+<!-- Universal drag ghost for touch -->
+<div id="dragGhost"></div>
 
 <script>
 /* ===================== UTILITY ===================== */
@@ -1432,258 +1698,480 @@ function switchGame(n, btn){
   btn.classList.add('active');
 }
 
-/* ===================== GAME 1 – NEPHRON ORDER ===================== */
-const nephronOrder = [
-  'Glomerulus',
-  'Bowman Kapsülü',
-  'Proksimal Tüp',
-  'Henle Kulpu',
-  'Distal Tüp',
-  'Toplayıcı Kanal'
-];
-let game1Placement = {};
-let draggedPart = null;
+/* ===================== UNIVERSAL TOUCH+MOUSE DRAG ===================== */
+/*
+  A single drag system that works on both mouse and touch.
+  Each "chip" element gets makeDraggable(el, onDrop) called.
+  onDrop(el, targetEl) fires when released over a droppable target.
+  Droppable targets have class "droppable" and data-region attribute.
+*/
+const ghost = $('dragGhost');
+let activeDrag = null; // { el, onDrop, origParent, origNext, offsetX, offsetY }
 
-function initGame1(){
-  const pool = $('partsPool');
-  const slots = $('dropSlots');
-  pool.innerHTML = '';
-  slots.innerHTML = '';
-  game1Placement = {};
+function makeDraggable(el, onDrop) {
+  el.addEventListener('mousedown', e => startDrag(e, el, onDrop, false));
+  el.addEventListener('touchstart', e => startDrag(e, el, onDrop, true), { passive: false });
+}
+
+function startDrag(e, el, onDrop, isTouch) {
+  if (el.classList.contains('placed') || el.classList.contains('is-dragging')) return;
+  e.preventDefault();
+
+  const rect = el.getBoundingClientRect();
+  const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+  const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+
+  ghost.textContent = el.textContent;
+  ghost.style.background = getComputedStyle(el).backgroundColor;
+  ghost.style.display = 'block';
+  ghost.style.left = clientX + 'px';
+  ghost.style.top  = clientY + 'px';
+
+  el.classList.add('is-dragging');
+
+  activeDrag = {
+    el, onDrop,
+    offsetX: clientX - rect.left,
+    offsetY: clientY - rect.top
+  };
+
+  if (isTouch) {
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onUp, { once: true });
+  } else {
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp, { once: true });
+  }
+}
+
+function onMove(e) {
+  if (!activeDrag) return;
+  e.preventDefault();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  ghost.style.left = clientX + 'px';
+  ghost.style.top  = clientY + 'px';
+
+  // Highlight droppables
+  document.querySelectorAll('.droppable').forEach(d => {
+    const r = d.getBoundingClientRect();
+    if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+      d.classList.add('drop-over');
+    } else {
+      d.classList.remove('drop-over');
+    }
+  });
+}
+
+function onUp(e) {
+  if (!activeDrag) return;
+  document.removeEventListener('mousemove', onMove);
+  document.removeEventListener('touchmove', onMove);
+  ghost.style.display = 'none';
+
+  const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+  const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+
+  // Find droppable under finger/cursor
+  let target = null;
+  document.querySelectorAll('.droppable').forEach(d => {
+    d.classList.remove('drop-over');
+    const r = d.getBoundingClientRect();
+    if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+      target = d;
+    }
+  });
+
+  const { el, onDrop } = activeDrag;
+  el.classList.remove('is-dragging');
+  activeDrag = null;
+
+  if (target) {
+    onDrop(el, target);
+  }
+}
+
+/* ===================== GAME 1 – NEPHRON ORDER ===================== */
+const nephronParts = [
+  { name: 'Glomerulus',       color: '#E53935', icon: '🔴', desc: 'Kan filtresi' },
+  { name: 'Bowman Kapsülü',   color: '#7B1FA2', icon: '🟣', desc: 'Filtrat toplayıcı' },
+  { name: 'Proksimal Tüp',    color: '#1565C0', icon: '🔵', desc: 'Geri emilim başlar' },
+  { name: 'Henle Kulpu',      color: '#0288D1', icon: '💙', desc: 'Su–tuz dengesi' },
+  { name: 'Distal Tüp',       color: '#00838F', icon: '🩵', desc: 'İnce ayar' },
+  { name: 'Toplayıcı Kanal',  color: '#2E7D32', icon: '🟢', desc: 'İdrar yoğunlaşır' }
+];
+
+let g1Slots = {}; // index -> name
+let g1SelectionMode = null; // { el, name } when tapping on mobile without drag
+
+function initGame1() {
+  g1Slots = {};
+  g1SelectionMode = null;
   $('game1Feedback').className = 'feedback-box';
   $('game1Feedback').innerHTML = '';
 
-  // Shuffle
-  const shuffled = [...nephronOrder].sort(()=>Math.random()-0.5);
+  // Build visual nephron slots
+  const visual = $('g1NephronVisual');
+  visual.innerHTML = '<div class="g1-nephron-label" style="margin-bottom:6px;">Nefron Şeması</div>';
+  nephronParts.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;';
 
-  shuffled.forEach(name=>{
-    const el = document.createElement('div');
-    el.className = 'drag-part';
-    el.textContent = name;
-    el.draggable = true;
-    el.dataset.name = name;
-    el.id = 'part-g1-'+name.replace(/\s/g,'_');
-    el.addEventListener('dragstart', e=>{
-      draggedPart = name;
-      e.dataTransfer.setData('text/plain', name);
-      setTimeout(()=>el.classList.add('dragging'),0);
-    });
-    el.addEventListener('dragend', ()=>el.classList.remove('dragging'));
-    pool.appendChild(el);
-  });
+    const arrow = document.createElement('div');
+    arrow.style.cssText = `width:16px;font-size:0.7rem;color:#bbb;text-align:center;flex-shrink:0;`;
+    arrow.textContent = i === 0 ? '▼' : '↓';
 
-  nephronOrder.forEach((name, i)=>{
     const slot = document.createElement('div');
-    slot.className = 'drop-slot';
+    slot.className = 'g1-part-visual empty droppable';
     slot.dataset.index = i;
-    slot.innerHTML = `<div class="slot-number">${i+1}</div><span class="slot-label">Buraya sürükle...</span>`;
-    slot.addEventListener('dragover', e=>{ e.preventDefault(); slot.classList.add('over'); });
-    slot.addEventListener('dragleave', ()=>slot.classList.remove('over'));
-    slot.addEventListener('drop', e=>{
-      e.preventDefault();
-      slot.classList.remove('over');
-      const name = e.dataTransfer.getData('text/plain');
-      // Remove from other slots
-      Object.keys(game1Placement).forEach(k=>{
-        if(game1Placement[k]===name) delete game1Placement[k];
-      });
-      // Re-add part to pool if slot had something
-      if(game1Placement[i]){
-        const oldName = game1Placement[i];
-        const oldEl = document.createElement('div');
-        oldEl.className = 'drag-part';
-        oldEl.textContent = oldName;
-        oldEl.draggable = true;
-        oldEl.dataset.name = oldName;
-        addDragListeners(oldEl);
-        $('partsPool').appendChild(oldEl);
+    slot.innerHTML = `<span style="color:#bbb;font-size:0.8rem;">${i+1}. sıraya yerleştir…</span>`;
+
+    slot.addEventListener('click', () => g1SlotClick(slot, i));
+
+    makeDraggable(slot, () => {}); // slots are targets, not sources
+
+    // Make slot a drop target
+    slot.addEventListener('mousedown', e => e.stopPropagation()); // don't start drag from slot
+
+    visual.appendChild(row);
+    row.appendChild(arrow);
+    row.appendChild(slot);
+  });
+
+  // Reassign makeDraggable to only chips in pool
+  // Build pool
+  const pool = $('g1Pool');
+  pool.innerHTML = '';
+  const shuffled = [...nephronParts].sort(() => Math.random() - 0.5);
+  shuffled.forEach(p => {
+    pool.appendChild(makeG1Chip(p));
+  });
+
+  // Wire droppable slots
+  document.querySelectorAll('#g1NephronVisual .droppable').forEach(slot => {
+    slot.removeEventListener('mousedown', onMove);
+  });
+}
+
+function makeG1Chip(p) {
+  const chip = document.createElement('div');
+  chip.className = 'drag-chip';
+  chip.style.background = p.color;
+  chip.dataset.name = p.name;
+  chip.innerHTML = `${p.icon} ${p.name}`;
+  chip.title = p.desc;
+  chip.addEventListener('click', () => g1ChipClick(chip, p));
+  makeDraggable(chip, (el, target) => {
+    const idx = parseInt(target.dataset.index);
+    g1PlaceChip(el, idx);
+  });
+  return chip;
+}
+
+function g1ChipClick(chip, p) {
+  // Mobile tap: select chip, then tap slot
+  if (g1SelectionMode && g1SelectionMode.chip === chip) {
+    // deselect
+    chip.style.outline = '';
+    g1SelectionMode = null;
+    return;
+  }
+  document.querySelectorAll('#g1Pool .drag-chip').forEach(c => c.style.outline = '');
+  g1SelectionMode = { chip, p };
+  chip.style.outline = '3px solid white';
+  chip.style.outlineOffset = '2px';
+}
+
+function g1SlotClick(slot, idx) {
+  if (!g1SelectionMode) return;
+  g1PlaceChip(g1SelectionMode.chip, idx);
+  g1SelectionMode.chip.style.outline = '';
+  g1SelectionMode = null;
+}
+
+function g1PlaceChip(chipEl, idx) {
+  const name = chipEl.dataset.name;
+  const part = nephronParts.find(p => p.name === name);
+  if (!part) return;
+
+  // If slot already has something, return old chip to pool
+  if (g1Slots[idx]) {
+    const oldName = g1Slots[idx];
+    const oldPart = nephronParts.find(p => p.name === oldName);
+    if (oldPart) {
+      const existingChip = $('g1Pool').querySelector(`[data-name="${oldName}"]`);
+      if (!existingChip) $('g1Pool').appendChild(makeG1Chip(oldPart));
+    }
+  }
+
+  // If this chip was assigned to another slot, clear that slot
+  Object.keys(g1Slots).forEach(k => {
+    if (g1Slots[k] === name && parseInt(k) !== idx) {
+      delete g1Slots[k];
+      const otherSlot = $('g1NephronVisual').querySelector(`[data-index="${k}"]`);
+      if (otherSlot) {
+        otherSlot.className = 'g1-part-visual empty droppable';
+        otherSlot.dataset.index = k;
+        otherSlot.innerHTML = `<span style="color:#bbb;font-size:0.8rem;">${parseInt(k)+1}. sıraya yerleştir…</span>`;
+        otherSlot.addEventListener('click', () => g1SlotClick(otherSlot, parseInt(k)));
       }
-      game1Placement[i] = name;
-      slot.innerHTML = `<div class="slot-number">${i+1}</div><span style="font-weight:600;">${name}</span>`;
-      slot.classList.remove('correct','wrong');
-      // Remove from pool
-      const poolEl = document.querySelector(`[data-name="${name}"]`);
-      if(poolEl && poolEl.parentElement === $('partsPool')) poolEl.remove();
-    });
-    slots.appendChild(slot);
+    }
   });
+
+  g1Slots[idx] = name;
+
+  // Update slot visually
+  const slot = $('g1NephronVisual').querySelector(`[data-index="${idx}"]`);
+  if (slot) {
+    slot.className = 'g1-part-visual droppable';
+    slot.style.background = part.color;
+    slot.dataset.index = idx;
+    slot.innerHTML = `${part.icon} <strong style="margin-left:4px;">${part.name}</strong>`;
+    slot.onclick = () => g1SlotClick(slot, idx);
+  }
+
+  // Remove chip from pool
+  const poolChip = $('g1Pool').querySelector(`[data-name="${name}"]`);
+  if (poolChip) poolChip.remove();
 }
 
-function addDragListeners(el){
-  const name = el.dataset.name;
-  el.draggable = true;
-  el.addEventListener('dragstart', e=>{
-    draggedPart = name;
-    e.dataTransfer.setData('text/plain', name);
-    setTimeout(()=>el.classList.add('dragging'),0);
-  });
-  el.addEventListener('dragend', ()=>el.classList.remove('dragging'));
-}
-
-function checkGame1(){
+function checkGame1() {
   let correct = 0;
-  const slots = document.querySelectorAll('.drop-slot');
-  slots.forEach((slot, i)=>{
-    const placed = game1Placement[i];
-    if(!placed){ return; }
-    if(placed === nephronOrder[i]){
-      slot.classList.add('correct'); slot.classList.remove('wrong');
+  nephronParts.forEach((p, i) => {
+    const slot = $('g1NephronVisual').querySelector(`[data-index="${i}"]`);
+    if (!slot) return;
+    if (g1Slots[i] === p.name) {
       correct++;
-    } else {
-      slot.classList.add('wrong'); slot.classList.remove('correct');
+      slot.classList.add('correct-anim');
+    } else if (g1Slots[i]) {
+      slot.classList.add('wrong-anim');
+      setTimeout(() => slot.classList.remove('wrong-anim'), 400);
     }
   });
   const fb = $('game1Feedback');
-  fb.className = 'feedback-box show ' + (correct===6?'correct-fb':'wrong-fb');
-  if(correct===6){
-    fb.innerHTML = '🎉 Mükemmel! Nefron sırasını doğru kurguladın. Glomerulus → Bowman → Proksimal Tüp → Henle Kulpu → Distal Tüp → Toplayıcı Kanal';
+  if (correct === nephronParts.length) {
+    fb.className = 'feedback-box show correct-fb';
+    fb.innerHTML = '🎉 Mükemmel! Nefronun sırasını doğru oluşturdun! Kan → Glomerulus → Bowman → Proksimal → Henle → Distal → Toplayıcı kanal';
     saveProgress('game1', true);
   } else {
-    fb.innerHTML = `${correct}/6 doğru. Kırmızı ile işaretlenen yerleri tekrar kontrol et. Doğru sıra: ${nephronOrder.join(' → ')}`;
+    fb.className = 'feedback-box show wrong-fb';
+    fb.innerHTML = `${correct}/${nephronParts.length} doğru. Kırmızı kenarlıklı yerleri kontrol et. Doğru sıra: ${nephronParts.map(p=>p.name).join(' → ')}`;
   }
 }
 
-function resetGame1(){ initGame1(); }
+function resetGame1() { initGame1(); }
 
 /* ===================== GAME 2 – REABSORPTION HUNT ===================== */
-const molData = [
-  { name: 'Glikoz', region: 'proximal', hint: 'Glikoz tamamıyla proksimal tüpte geri emilir.' },
-  { name: 'Aminoasit', region: 'proximal', hint: 'Aminoasitler proksimal tüpte aktif taşıma ile geri emilir.' },
-  { name: 'Na⁺ (büyük bölüm)', region: 'proximal', hint: 'Sodyumun %65-70\'i proksimal tüpte emilir.' },
-  { name: 'Su (Henle)', region: 'henle', hint: 'Henle\'nin inen kolu suya geçirgendir; ozmozla su çıkar.' },
-  { name: 'Na⁺ / Cl⁻ (Henle)', region: 'henle', hint: 'Henle\'nin çıkan kolu Na⁺ ve Cl⁻\'yi aktif taşır; suya geçirgen değildir.' },
-  { name: 'Su (ADH etkisiyle)', region: 'distal', hint: 'ADH hormonunun etkisiyle distal tüp ve toplayıcı kanal suya geçirgen hale gelir.' },
-  { name: 'K⁺ / H⁺ (salgılama)', region: 'distal', hint: 'Distal tüpte K⁺ ve H⁺ salgılanırken Na⁺ emilir (aldosteron etkisiyle).' }
+const g2Mols = [
+  { name: 'Glikoz',          region: 'proximal', color: '#E53935', icon: '🍬', hint: 'Glikoz tamamıyla proksimal tüpte geri emilir (%100).' },
+  { name: 'Aminoasit',       region: 'proximal', color: '#C62828', icon: '🔗', hint: 'Aminoasitler proksimal tüpte aktif taşıma ile geri emilir.' },
+  { name: 'Na⁺ (büyük kısım)', region: 'proximal', color: '#1565C0', icon: '⚡', hint: 'Na⁺\'un %65–70\'i proksimal tüpte emilir.' },
+  { name: 'Su (ozmoz, inen kol)', region: 'henle', color: '#0288D1', icon: '💧', hint: 'Henle\'nin inen kolu suya geçirgendir; ozmozla su çıkar.' },
+  { name: 'Na⁺/Cl⁻ (çıkan kol)', region: 'henle', color: '#01579B', icon: '🔬', hint: 'Henle\'nin çıkan kolu su geçirmez, Na⁺ ve Cl⁻ aktif taşır.' },
+  { name: 'Su (ADH etkisiyle)', region: 'distal', color: '#00838F', icon: '🚰', hint: 'ADH hormonu distal tüp ve toplayıcı kanalı suya geçirgen yapar.' },
+  { name: 'Na⁺ (aldosteron)', region: 'distal', color: '#006064', icon: '🧂', hint: 'Aldosteron, distal tüpte Na⁺ geri emilimini artırır.' }
 ];
 
-let game2Placement = {};
+let g2Placement = {};
+let g2Selected = null;
 
-function initGame2(){
-  game2Placement = {};
+function initGame2() {
+  g2Placement = {};
+  g2Selected = null;
   $('game2Feedback').className = 'feedback-box';
   $('game2Feedback').innerHTML = '';
-  document.querySelectorAll('.region-items').forEach(r=>r.innerHTML='');
-  document.querySelectorAll('.nephron-region').forEach(r=>r.classList.remove('has-correct'));
+  ['proximal','henle','distal'].forEach(r => {
+    $(`g2drop-${r}`).innerHTML = '';
+    $(`g2r-${r}`).classList.remove('has-items');
+  });
 
-  const palette = $('molPalette');
+  const palette = $('g2Palette');
   palette.innerHTML = '';
-  molData.forEach(mol=>{
-    const el = document.createElement('div');
-    el.className = 'mol-item';
-    el.textContent = mol.name;
-    el.draggable = true;
-    el.dataset.mol = mol.name;
-    el.addEventListener('dragstart', e=>{
-      e.dataTransfer.setData('text/plain', mol.name);
-    });
-    palette.appendChild(el);
+  g2Mols.forEach(mol => {
+    palette.appendChild(makeG2Chip(mol));
+  });
+
+  // Wire region drop targets
+  ['proximal','henle','distal'].forEach(r => {
+    const region = $(`g2r-${r}`);
+    region.classList.add('droppable');
+    region.dataset.region = r;
+    region.addEventListener('click', () => g2RegionClick(r));
   });
 }
 
-function allowDrop(e){ e.preventDefault(); }
-
-function dropMol(e, regionId){
-  e.preventDefault();
-  const name = e.dataTransfer.getData('text/plain');
-  if(!name) return;
-  game2Placement[name] = regionId;
-  const region = $('region-'+regionId);
-  const items = region.querySelector('.region-items');
-  const tag = document.createElement('span');
-  tag.className = 'molecule-tag reabsorbed';
-  tag.style.margin = '3px';
-  tag.textContent = name;
-  items.appendChild(tag);
-  const palEl = $('molPalette').querySelector(`[data-mol="${name}"]`);
-  if(palEl) palEl.classList.add('placed');
+function makeG2Chip(mol) {
+  const chip = document.createElement('div');
+  chip.className = 'mol-chip';
+  chip.style.background = mol.color;
+  chip.dataset.mol = mol.name;
+  chip.innerHTML = `<div class="mol-icon">${mol.icon}</div><span>${mol.name}</span>`;
+  chip.addEventListener('click', () => g2ChipClick(chip, mol));
+  makeDraggable(chip, (el, target) => {
+    const region = target.dataset.region;
+    if (region) g2PlaceMol(mol, region);
+  });
+  return chip;
 }
 
-function checkGame2(){
+function g2ChipClick(chip, mol) {
+  if (chip.classList.contains('placed')) return;
+  if (g2Selected && g2Selected.chip === chip) {
+    chip.style.outline = '';
+    g2Selected = null;
+    return;
+  }
+  document.querySelectorAll('#g2Palette .mol-chip').forEach(c => c.style.outline = '');
+  g2Selected = { chip, mol };
+  chip.style.outline = '3px solid white';
+  chip.style.outlineOffset = '2px';
+}
+
+function g2RegionClick(region) {
+  if (!g2Selected) return;
+  g2PlaceMol(g2Selected.mol, region);
+  g2Selected.chip.style.outline = '';
+  g2Selected = null;
+}
+
+function g2PlaceMol(mol, region) {
+  g2Placement[mol.name] = region;
+  const container = $(`g2drop-${region}`);
+  const chip = document.createElement('div');
+  chip.className = 'placed-chip';
+  chip.style.background = mol.color;
+  chip.innerHTML = `${mol.icon} ${mol.name}`;
+  container.appendChild(chip);
+  $(`g2r-${region}`).classList.add('has-items');
+
+  // Mark as placed in palette
+  const palChip = $('g2Palette').querySelector(`[data-mol="${mol.name}"]`);
+  if (palChip) palChip.classList.add('placed');
+}
+
+function checkGame2() {
   let correct = 0;
-  molData.forEach(mol=>{
-    if(game2Placement[mol.name]===mol.region) correct++;
+  const hints = [];
+  g2Mols.forEach(mol => {
+    if (g2Placement[mol.name] === mol.region) correct++;
+    else if (g2Placement[mol.name]) hints.push(`<li><strong>${mol.name}:</strong> ${mol.hint}</li>`);
   });
   const fb = $('game2Feedback');
-  fb.className = 'feedback-box show '+(correct===molData.length?'correct-fb':'wrong-fb');
-  if(correct===molData.length){
+  if (correct === g2Mols.length) {
+    fb.className = 'feedback-box show correct-fb';
     fb.innerHTML = '🎉 Harika! Tüm maddeleri doğru bölgelere yerleştirdin!';
     saveProgress('game2', true);
   } else {
-    let hints = molData.filter(m=>game2Placement[m.name]&&game2Placement[m.name]!==m.region).map(m=>`<li><strong>${m.name}:</strong> ${m.hint}</li>`).join('');
-    fb.innerHTML = `${correct}/${molData.length} doğru.<br><ul style="margin-top:6px;padding-left:1.2rem;">${hints||'<li>Bazı maddeler henüz yerleştirilmedi.</li>'}</ul>`;
+    fb.className = 'feedback-box show wrong-fb';
+    fb.innerHTML = `${correct}/${g2Mols.length} doğru.<ul style="margin-top:6px;padding-left:1.2rem;">${hints.join('') || '<li>Bazı maddeler henüz yerleştirilmedi.</li>'}</ul>`;
   }
 }
 
-function resetGame2(){ initGame2(); }
+function resetGame2() { initGame2(); }
 
 /* ===================== GAME 3 – CLASSIFY ===================== */
-const classifyData = [
-  { name: 'Üre', answer: 'yes', reason: 'Üre, filtrasyondan geçer ve geri emilmez; idrarda bulunur.' },
-  { name: 'Glikoz', answer: 'no', reason: 'Glikoz %100 geri emilir; sağlıklı idrarda bulunmaz.' },
-  { name: 'Protein', answer: 'no', reason: 'Protein büyük molekül olduğundan filtrata geçemez; idrarda bulunmaz.' },
-  { name: 'Alyuvar', answer: 'no', reason: 'Alyuvarlar glomerulustan geçemez; idrarda görülmesi anormal bir durumdur.' },
-  { name: 'Su', answer: 'yes', reason: 'İdrardaki su %1\'i temsil eder; evet, idrarda su bulunur.' },
-  { name: 'Aminoasit', answer: 'no', reason: 'Aminoasitler proksimal tüpte tamamen geri emilir.' },
-  { name: 'Kreatinin', answer: 'yes', reason: 'Kreatinin geri emilmez; idrarda atılan atık maddelere katılır.' },
-  { name: 'Na⁺ (küçük miktar)', answer: 'yes', reason: 'Sodyumun büyük bölümü emilse de az miktarı idrara geçer.' }
+const g3Items = [
+  { name: 'Üre',       answer: 'yes', color: '#FF8F00', icon: '🟡', reason: 'Üre filtrasyondan geçer ve geri emilmez; idrarda bulunur.' },
+  { name: 'Glikoz',    answer: 'no',  color: '#1565C0', icon: '🍬', reason: 'Glikoz %100 geri emilir; sağlıklı idrarda bulunmaz.' },
+  { name: 'Protein',   answer: 'no',  color: '#283593', icon: '🔗', reason: 'Protein büyük molekül olduğundan filtrata geçemez.' },
+  { name: 'Alyuvar',   answer: 'no',  color: '#C62828', icon: '🔴', reason: 'Alyuvarlar glomerulustan geçemez; idrarda görülmesi anormal.' },
+  { name: 'Su',        answer: 'yes', color: '#0288D1', icon: '💧', reason: 'İdrarda su bulunur; tümü emilmez.' },
+  { name: 'Aminoasit', answer: 'no',  color: '#4527A0', icon: '🧬', reason: 'Aminoasitler proksimal tüpte tamamen geri emilir.' },
+  { name: 'Kreatinin', answer: 'yes', color: '#E65100', icon: '⚗️', reason: 'Kreatinin geri emilmez; idrara katılır.' },
+  { name: 'Na⁺',       answer: 'yes', color: '#006064', icon: '⚡', reason: 'Sodyumun büyük bölümü emilse de az miktarı idrara geçer.' }
 ];
 
-let classifyPlacement = {};
+let g3Placement = {};
+let g3Selected = null;
 
-function initGame3(){
-  classifyPlacement = {};
+function initGame3() {
+  g3Placement = {};
+  g3Selected = null;
   $('game3Feedback').className = 'feedback-box';
   $('game3Feedback').innerHTML = '';
-  $('bin-yes-items').innerHTML = '';
-  $('bin-no-items').innerHTML = '';
+  $('g3drop-yes').innerHTML = '';
+  $('g3drop-no').innerHTML = '';
 
-  const pool = $('classifyPool');
+  const pool = $('g3Pool');
   pool.innerHTML = '';
-  classifyData.forEach(item=>{
-    const el = document.createElement('div');
-    el.className = 'mol-item';
-    el.textContent = item.name;
-    el.draggable = true;
-    el.dataset.mol = item.name;
-    el.addEventListener('dragstart', e=>e.dataTransfer.setData('text/plain', item.name));
-    pool.appendChild(el);
+  const shuffled = [...g3Items].sort(() => Math.random() - 0.5);
+  shuffled.forEach(item => {
+    pool.appendChild(makeG3Chip(item));
+  });
+
+  // Wire bins
+  ['yes','no'].forEach(bin => {
+    const binEl = $(`g3bin-${bin}`);
+    binEl.classList.add('droppable');
+    binEl.dataset.region = bin;
+    binEl.addEventListener('click', () => g3BinClick(bin));
   });
 }
 
-function dropClassify(e, bin){
-  e.preventDefault();
-  const name = e.dataTransfer.getData('text/plain');
-  if(!name) return;
-  classifyPlacement[name] = bin;
-  const container = $('bin-'+bin+'-items');
-  const tag = document.createElement('div');
-  tag.className = 'mol-item';
-  tag.textContent = name;
-  tag.style.cursor = 'default';
-  container.appendChild(tag);
-  const poolEl = $('classifyPool').querySelector(`[data-mol="${name}"]`);
-  if(poolEl) poolEl.remove();
+function makeG3Chip(item) {
+  const chip = document.createElement('div');
+  chip.className = 'drag-chip';
+  chip.style.background = item.color;
+  chip.dataset.mol = item.name;
+  chip.innerHTML = `${item.icon} ${item.name}`;
+  chip.addEventListener('click', () => g3ChipClick(chip, item));
+  makeDraggable(chip, (el, target) => {
+    const bin = target.dataset.region;
+    if (bin) g3PlaceItem(item, bin);
+  });
+  return chip;
 }
 
-function checkGame3(){
+function g3ChipClick(chip, item) {
+  if (g3Selected && g3Selected.chip === chip) {
+    chip.style.outline = '';
+    g3Selected = null;
+    return;
+  }
+  document.querySelectorAll('#g3Pool .drag-chip').forEach(c => c.style.outline = '');
+  g3Selected = { chip, item };
+  chip.style.outline = '3px solid white';
+  chip.style.outlineOffset = '2px';
+}
+
+function g3BinClick(bin) {
+  if (!g3Selected) return;
+  g3PlaceItem(g3Selected.item, bin);
+  g3Selected.chip.style.outline = '';
+  g3Selected = null;
+}
+
+function g3PlaceItem(item, bin) {
+  g3Placement[item.name] = bin;
+
+  const tag = document.createElement('div');
+  tag.className = 'classify-chip';
+  tag.innerHTML = `${item.icon} ${item.name}`;
+  $(`g3drop-${bin}`).appendChild(tag);
+
+  const poolChip = $('g3Pool').querySelector(`[data-mol="${item.name}"]`);
+  if (poolChip) poolChip.remove();
+}
+
+function checkGame3() {
   let correct = 0, wrongs = [];
-  classifyData.forEach(item=>{
-    if(classifyPlacement[item.name]===item.answer) correct++;
-    else if(classifyPlacement[item.name]) wrongs.push(item);
+  g3Items.forEach(item => {
+    if (g3Placement[item.name] === item.answer) correct++;
+    else if (g3Placement[item.name]) wrongs.push(item);
   });
   const fb = $('game3Feedback');
-  const all = Object.keys(classifyPlacement).length;
-  fb.className = 'feedback-box show '+(correct===classifyData.length?'correct-fb':'wrong-fb');
-  if(correct===classifyData.length){
+  if (correct === g3Items.length) {
+    fb.className = 'feedback-box show correct-fb';
     fb.innerHTML = '🎉 Mükemmel! Tüm molekülleri doğru sınıflandırdın!';
     saveProgress('game3', true);
   } else {
-    let msgs = wrongs.map(w=>`<li><strong>${w.name}:</strong> ${w.reason}</li>`).join('');
-    fb.innerHTML = `${correct}/${classifyData.length} doğru.<br><ul style="margin-top:6px;padding-left:1.2rem;">${msgs||'<li>Tüm maddeleri yerleştir ve tekrar dene!</li>'}</ul>`;
+    const msgs = wrongs.map(w => `<li>${w.icon} <strong>${w.name}:</strong> ${w.reason}</li>`).join('');
+    fb.className = 'feedback-box show wrong-fb';
+    fb.innerHTML = `${correct}/${g3Items.length} doğru.<ul style="margin-top:6px;padding-left:1.2rem;">${msgs || '<li>Tüm maddeleri yerleştir ve tekrar dene!</li>'}</ul>`;
   }
 }
 
-function resetGame3(){ initGame3(); }
+function resetGame3() { initGame3(); }
 
 /* ===================== GAME 4 – SAVE THE KIDNEY ===================== */
 const scenarios = [
